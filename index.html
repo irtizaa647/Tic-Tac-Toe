@@ -76,6 +76,7 @@ input[type="text"] {
   border-radius: 6px;
   font-size: 1rem;
   width: 140px;
+  /* display: block; */
 }
 
 button {
@@ -99,6 +100,17 @@ button:hover {
   color: #444;
   margin-top: 0.5rem;
 }
+#player2-container {
+  transition: opacity 0.3s ease;
+}
+.hidden {
+  display: none;
+}
+
+.friend,.ai{
+    display: flex;
+    flex-direction:column;
+}
 
 
     </style>
@@ -108,8 +120,19 @@ button:hover {
         <div id="board"></div>
         <div id="info">
             <form action="" id="player-form">
-                <input type="text" id="player1" placeholder="Player 1 Name" required > 
-                <input type="text" id="player2" placeholder="Player 2 Name" required>
+                <div>
+                <input type="text" id="player1" placeholder="Player 1 Name" required >
+                </div>
+  <div id="player2-container">
+    <input type="text" id="player2" placeholder="Player 2 Name" />
+  </div>
+
+                <div class="friend">
+    <input type="radio" name="mode" value="local" checked /> Play with Friend
+  </div>
+                   <div class="ai">
+    <input type="radio" name="mode" value="ai" /> Play with AI
+  </div>
                 <button type="submit">Start Game</button>
             </form>
 

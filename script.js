@@ -1,4 +1,3 @@
-
 //IIFE(gameboard module)
 const Gameboard = (() => {
   let board = ["", "", "", "", "", "", "", "", ""];
@@ -28,9 +27,11 @@ const Game = (() => {
   let currentPlayer;
   let players = [];
   let gameOver = false;
+  let isVsAI = false;
 
-  const start = (name1, name2) => {
-    players = [Player(name1, "X"), Player(name2, "O")];
+  const start = (name1, name2, vsAI = false) => {
+    isVsAI = vsAI;
+    players = [Player(name1, "X"), vsAI ? Player("AI", "O") : Player(name2, "O")];
     currentPlayer = players[0];
     Gameboard.resetBoard();
     gameOver = false;
@@ -38,22 +39,40 @@ const Game = (() => {
     DisplayController.updateResult(`${currentPlayer.name}'s turn`);
   };
 
-  const playRound = (index) => {
-    if (gameOver) return;
-    if (Gameboard.setMark(index, currentPlayer.mark)) {
-      DisplayController.renderBoard();
-      if (checkWin()) {
-        DisplayController.updateResult(`${currentPlayer.name} wins!`);
-        gameOver = true;
-      } else if (checkTie()) {
-        DisplayController.updateResult("It's a tie!");
-        gameOver = true;
-      } else {
-        switchPlayer();
-        DisplayController.updateResult(`${currentPlayer.name}'s turn`);
+ const playRound = (index) => {
+  if (gameOver) return;
+  if (Gameboard.setMark(index, currentPlayer.mark)) {
+    DisplayController.renderBoard();
+    if (checkWin()) {
+      DisplayController.updateResult(`${currentPlayer.name} wins!`);
+      gameOver = true;
+    } else if (checkTie()) {
+      DisplayController.updateResult("It's a tie!");
+      gameOver = true;
+    } else {
+      switchPlayer();
+      DisplayController.updateResult(`${currentPlayer.name}'s turn`);
+      
+      // AI move delay
+      if (isVsAI && currentPlayer.name === "AI") {
+        DisplayController.updateResult("AI is thinking...");
+        setTimeout(() => {
+          aiMove();
+        }, 2000); // 2 seconds delay
       }
     }
-  };
+  }
+};
+
+const aiMove = () => {
+  const board = Gameboard.getBoard();
+  const emptyIndices = board
+    .map((val, i) => (val === "" ? i : null))
+    .filter((i) => i !== null);
+  const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+  playRound(randomIndex);
+};
+
 
   const switchPlayer = () => {
     currentPlayer = currentPlayer === players[0] ? players[1] : players[0];
@@ -106,11 +125,39 @@ document.getElementById("player-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const p1 = document.getElementById("player1").value.trim();
   const p2 = document.getElementById("player2").value.trim();
-  if (p1 && p2) Game.start(p1, p2);
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  if (p1) {
+    if (mode === "ai") {
+      Game.start(p1, "AI", true);
+    } else if (p2) {
+      Game.start(p1, p2, false);
+    }
+  }
 });
 
 document.getElementById("restart").addEventListener("click", () => {
   const p1 = document.getElementById("player1").value.trim();
   const p2 = document.getElementById("player2").value.trim();
-  if (p1 && p2) Game.start(p1, p2);
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  if (p1) {
+    if (mode === "ai") {
+      Game.start(p1, "AI", true);
+    } else if (p2) {
+      Game.start(p1, p2, false);
+    }
+  }
+});
+
+//to toggle vsibility
+const modeRadios = document.querySelectorAll('input[name="mode"]');
+const player2Container = document.getElementById("player2-container");
+
+modeRadios.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    if (radio.value === "ai") {
+      player2Container.classList.add("hidden");
+    } else {
+      player2Container.classList.remove("hidden");
+    }
+  });
 });
